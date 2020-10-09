@@ -1,6 +1,7 @@
 package rcon
 
 import (
+	"encoding/binary"
 	"fmt"
 	"log"
 	"os"
@@ -72,10 +73,54 @@ func TestClient(t *testing.T) {
 		t.Errorf("Command execution should've succeeded, but it failed. Error: %v", err)
 	}
 
-	res, err = client.ExecCommand(strings.Repeat("a", PayloadMaxSize+1))
+	fmt.Println(res)
+
+	res, err = client.ExecCommand(strings.Repeat("a", payloadMaxSize+1))
 	if err == nil {
 		t.Errorf("Payload was too big, but was sent to the server anyway")
 	}
 
 	fmt.Println(res)
+}
+
+func TestNewPayload(t *testing.T) {
+	payload := newPayload(payloadTypeCommand, "help")
+
+	if payload.Type != payloadTypeCommand {
+		t.Errorf("")
+	}
+}
+
+func TestPacket(t *testing.T) {
+	// Determined via manual calculation
+	const properSize = 14
+
+	payload := newPayload(payloadTypeCommand, "help")
+
+	packet, err := buildPacketFromPayload(payload)
+	if err != nil {
+		t.Errorf("Could not build packet from payload. Error: %v", err)
+	}
+
+	// Manually read bytes out from the packet
+	pSize := int32(binary.LittleEndian.Uint32(packet[0:4]))
+	pID := int32(binary.LittleEndian.Uint32(packet[4:8]))
+	pType := int32(binary.LittleEndian.Uint32(packet[8:12]))
+	pBody := packet[12 : len(packet)-2]
+
+	if pSize != properSize {
+		t.Errorf("Packet size contained the wrong size")
+	}
+
+	if pID != int32(currentPayloadID) {
+		t.Errorf("Packet id contained the wrong ID. Expected: %d, actual: %d", currentPayloadID, pID)
+	}
+
+	if pType != payloadTypeCommand {
+		t.Errorf("Packet type contained the wrong type. Expected: %d, actual: %d", payloadTypeCommand, pType)
+	}
+
+	if string(pBody) != string(payload.Body) {
+		t.Errorf("Packet body contained incorrect data. Expected: %s, actual: %s", payload.Body, pBody)
+	}
 }
