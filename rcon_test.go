@@ -1,4 +1,4 @@
-package rcon
+package gorcon
 
 import (
 	"encoding/binary"

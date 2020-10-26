@@ -1,4 +1,4 @@
-package rcon
+package gorcon
 
 const (
 	payloadIDBytes   = 4
