@@ -1,4 +1,4 @@
-module github.com/sniddunc/rcon
+module github.com/sniddunc/gorcon
 
 go 1.15
 

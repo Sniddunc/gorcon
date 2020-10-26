@@ -80,6 +80,8 @@ func TestClient(t *testing.T) {
 		t.Errorf("Payload was too big, but was sent to the server anyway")
 	}
 
+	client.Reconnect()
+
 	fmt.Println(res)
 }
 
